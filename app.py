@@ -49,11 +49,17 @@ if username:
     method = st.selectbox('Select the method to evaluate:', methods, key='method')
     embedding = st.selectbox('Select the embedding model to evaluate:', embeddings, key='embedding')
     st.write(f'### Ranking by `{method}-{embedding}` for tag `{tag}` (`{task}`)')
-    st.write(f'Top {TOPN} tracks with highest activation values:')
+    st.write(f'*Top {TOPN} tracks with highest activation values.*')
     ranking_path = os.path.join(RANKINGS_DIR, method, task, embedding, tag)
     ranking = load_ranking(ranking_path)
 
     for track in ranking:
         trackid = track['id'].split('/')[1].split('.mp3')[0]
         jamendo_url = audio_url(trackid)
+        activation = track['prediction']
+        position = track['position']
+        st.write('---')
+        st.write(f'**Track {trackid}** - tag activation: {activation} (tag rank: {position})')
         st.audio(jamendo_url, format="audio/mp3", start_time=0)
+        answer = st.radio('Does this tag apply?', ('Unanswered', 'Yes', 'No'),
+                          key=f'answer_{trackid}')
