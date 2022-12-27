@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import os.path
 import csv
+import uuid
 
 
 RANKINGS_DIR = 'rankings'
@@ -58,13 +59,21 @@ def save_result(answer_key, results_path):
     return
 
 
+def is_valid_uuid(value):
+    try:
+        uuid.UUID(str(value))
+        return True
+    except ValueError:
+        return False
+
+
 st.write("""
 # Auto-tagging QA: retrieval by tag
 """)
 
 userid = st.text_input('Please, input your user UUID:', '', key='userid')
-if userid:
-    st.write(f'Registering annotations for `{userid}`')
+if is_valid_uuid(userid):
+    st.write(f'Registering annotations for `{userid}`.')
 
     task = st.selectbox('Select the task to evaluate:', tasks, key='task')
     tag = st.selectbox('Select the tag to evaluate:', tags[task], key='tag')
@@ -96,3 +105,15 @@ if userid:
         st.radio('Does this tag apply?', answers, index=answer_default,
                  key=results_key,
                  on_change=save_result, args=[results_key, results_path])
+else:
+    if userid:
+        st.write(':red[You need to provide a valid UUID.]')
+
+    userid = uuid.uuid4()
+    st.write('If you do not have an assigned user UUID yet, we generated one for you:')
+    st.write(f'''
+    ```
+    {userid}
+    ```
+    ''')
+    st.write('Please, write it down and keep it safe to use it for all your future annotation sessions. Copy paste your UUID to the input field above to proceed to annotations.')
