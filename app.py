@@ -5,6 +5,7 @@ import csv
 
 
 RANKINGS_DIR = 'rankings'
+RESULTS_DIR = 'results'
 
 TOPN = 20
 tasks = ['genre', 'moodtheme', 'instrument']
@@ -36,13 +37,34 @@ def audio_url(trackid):
     return f"https://mp3d.jamendo.com/?trackid={trackid}&format=mp32#t=0,120"
 
 
+def load_result(answers, results_path):
+    answer_default = 0
+    if os.path.isfile(results_path):
+        answer_str = open(results_path).read()
+        if answer_str in answers:
+            answer_default = answers.index(answer_str)
+        else:
+            st.write(f':red[Found corrupt results file:] `{results_path}`')
+    return answer_default
+
+
+def save_result(answer_key, results_path):
+    answer = st.session_state[answer_key]
+    results_path_dir = os.path.dirname(results_path)
+    if not os.path.exists(results_path_dir):
+        os.makedirs(results_path_dir)
+    with open(results_path, 'w') as f:
+        f.write(answer)
+    return
+
+
 st.write("""
 # Auto-tagging QA: retrieval by tag
 """)
 
-username = st.text_input('Please, input your username:', '', key='username')
-if username:
-    st.write(f'Registering annotations for `{username}`')
+userid = st.text_input('Please, input your user UUID:', '', key='userid')
+if userid:
+    st.write(f'Registering annotations for `{userid}`')
 
     task = st.selectbox('Select the task to evaluate:', tasks, key='task')
     tag = st.selectbox('Select the tag to evaluate:', tags[task], key='tag')
@@ -55,11 +77,22 @@ if username:
 
     for track in ranking:
         trackid = track['id'].split('/')[1].split('.mp3')[0]
+
+        # Filepaths for stored annotation results: userid/tag/trackid
+        results_path = os.path.join(RESULTS_DIR, userid, tag, trackid)
+
+        answers = ('Unanswered', 'Yes', 'No')
+        answer_default = load_result(answers, results_path)
+        done = '✅' if answer_default != answers.index('Unanswered') else ''
+
         jamendo_url = audio_url(trackid)
         activation = track['prediction']
         position = track['position']
         st.write('---')
-        st.write(f'**Track {trackid}** - tag activation: {activation} (tag rank: {position})')
+        st.write(f'{done} **Track {trackid}** - tag activation: {activation} (tag rank: {position})')
         st.audio(jamendo_url, format="audio/mp3", start_time=0)
-        answer = st.radio('Does this tag apply?', ('Unanswered', 'Yes', 'No'),
-                          key=f'answer_{trackid}')
+
+        results_key = f'answer_{trackid}'
+        st.radio('Does this tag apply?', answers, index=answer_default,
+                 key=results_key,
+                 on_change=save_result, args=[results_key, results_path])
