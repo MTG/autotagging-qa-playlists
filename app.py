@@ -10,7 +10,7 @@ RESULTS_DIR = 'results'
 
 TOPN = 20
 tasks = ['genre', 'moodtheme', 'instrument']
-methods = ['baseline', 'focalloss', 'mlbfo', 'mlsmote', 'mlsmote_mltl', 'mltl']
+methods = ['baseline', 'focalloss', 'mlbfo', 'mlsmote', 'mlsmote_mltl', 'mltl', 'dataloader', 'lpros', 'lprus']
 embeddings = ['effnet', 'vggish']
 
 tags = {}
