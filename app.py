@@ -84,7 +84,9 @@ if is_valid_uuid(userid):
     ranking_path = os.path.join(RANKINGS_DIR, method, task, embedding, tag)
     ranking = load_ranking(ranking_path)
 
+    track_i = 0
     for track in ranking:
+        track_i += 1
         trackid = track['id'].split('/')[1].split('.mp3')[0]
 
         # Filepaths for stored annotation results: userid/tag/trackid
@@ -98,7 +100,7 @@ if is_valid_uuid(userid):
         activation = track['prediction']
         position = track['position']
         st.write('---')
-        st.write(f'{done} **Track {trackid}** - tag activation: {activation} (tag rank: {position})')
+        st.write(f'#{track_i} - {done} **Track {trackid}** - tag activation: {activation} (tag rank: {position})')
         st.audio(jamendo_url, format="audio/mp3", start_time=0)
 
         results_key = f'answer_{trackid}'
