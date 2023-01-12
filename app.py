@@ -84,9 +84,8 @@ if is_valid_uuid(userid):
     ranking_path = os.path.join(RANKINGS_DIR, method, task, embedding, tag)
     ranking = load_ranking(ranking_path)
 
-    track_i = 0
-    for track in ranking:
-        track_i += 1
+    done_count = 0
+    for track_i, track in enumerate(ranking, start=1):
         trackid = track['id'].split('/')[1].split('.mp3')[0]
 
         # Filepaths for stored annotation results: userid/tag/trackid
@@ -95,6 +94,8 @@ if is_valid_uuid(userid):
         answers = ('Unanswered', 'Yes', 'No')
         answer_default = load_result(answers, results_path)
         done = '✅' if answer_default != answers.index('Unanswered') else ''
+        if done:
+            done_count += 1
 
         jamendo_url = audio_url(trackid)
         activation = track['prediction']
@@ -107,6 +108,8 @@ if is_valid_uuid(userid):
         st.radio('Does this tag apply?', answers, index=answer_default,
                  key=results_key,
                  on_change=save_result, args=[results_key, results_path])
+    st.write(f"{done_count} / {len(ranking)} done")
+
 else:
     if userid:
         st.write(':red[You need to provide a valid UUID.]')
