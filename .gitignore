@@ -1,4 +1,6 @@
-rankings/
-results/
+mtg-jamendo/rankings/
+mtg-jamendo/results/
+discogs-effnet/rankings/
+discogs-effnet/results/
 venv/
 .idea/
